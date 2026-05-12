@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using RimWorld;
@@ -9,15 +10,53 @@ namespace SourcingOnlyinDevMode
 {
     public class SourcingOnlyinDevModeMod : Mod
     {
+        public static Harmony harmony;
         public SourcingOnlyinDevModeMod(ModContentPack pack) : base(pack)
         {
-            new Harmony("SourcingOnlyinDevModeMod").PatchAll();
+            harmony = new Harmony("SourcingOnlyinDevModeMod");
+            harmony.PatchAll();
         }
     }
 
     [HarmonyPatch(typeof(MainTabWindow_Research), "DrawContentSource")]
     public static class MainTabWindow_Research_DrawContentSource_Patch
     {
+        public static bool Prefix()
+        {
+            if (Prefs.DevMode is false)
+            {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    [StaticConstructorOnStartup]
+    public static class MainTabWindow_NextResearch_DrawContentSource_Patch
+    {
+        static MainTabWindow_NextResearch_DrawContentSource_Patch()
+        {
+            if (Prepare())
+            {
+                var target = TargetMethod();
+                if (target is null)
+                {
+                    Log.Error("Couldn't find CM_Semi_Random_Research.MainTabWindow_NextResearch:DrawContentSource to patch");
+                    return;
+                }
+                SourcingOnlyinDevModeMod.harmony.Patch(target, prefix: new HarmonyMethod(AccessTools.Method(typeof(MainTabWindow_NextResearch_DrawContentSource_Patch), nameof(Prefix))));
+            }
+        }
+        public static bool Prepare()
+        {
+            return ModsConfig.IsActive("arodoid.semirandomprogression");
+        }
+
+        public static MethodBase TargetMethod()
+        {
+            return AccessTools.Method("CM_Semi_Random_Research.MainTabWindow_NextResearch:DrawContentSource");
+        }
+
         public static bool Prefix()
         {
             if (Prefs.DevMode is false)
