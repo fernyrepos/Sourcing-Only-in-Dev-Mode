@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ModMetaData>
-    <name>Sourcing-Only-in-Dev-Mode</name>
+    <name>Sourcing Only in Dev Mode</name>
     <author>ferny</author>
     <packageId>ferny.SourcingOnlyinDevMode</packageId>
-    <description></description>
+    <description>Only shows content sourcing when in development mode.</description>
     <supportedVersions>
         <li>1.6</li>
     </supportedVersions>
